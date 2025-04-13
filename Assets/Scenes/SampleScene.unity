@@ -8525,10 +8525,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   atmViewpoint: {fileID: 168819262}
   cardViewpoint: {fileID: 1321358340}
-  cardObject: {fileID: 2132479887}
+  card: {fileID: 2132479886}
   DistanceToInteract: 3
-  cardInsertZTarget: -0.48
-  dragSpeed: 0.001
+  cardSens: 2.221
 --- !u!1 &1559182791
 GameObject:
   m_ObjectHideFlags: 0

@@ -58,6 +58,7 @@ public class Atm : MonoBehaviour
     }
 
     private void CardInsertion() {
+        card.SetActive(true); // Enable the card object
         originalCamPos = mainCamera.transform.position;
         originalCamRot = mainCamera.transform.rotation;
         StartCoroutine(MoveCamera(mainCamera.transform.position, cardViewpoint.position, mainCamera.transform.rotation, cardViewpoint.rotation, 0.4f));
@@ -86,9 +87,14 @@ public class Atm : MonoBehaviour
     }
 
     public void ExitATMView() {
+        card.SetActive(false); // Disable the card object
+        card.transform.localPosition = new Vector3(0.3252f, 0.7195f, -0.64f); // Reset card position
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
         playerController.enabled = true;
+
+        isHoldingCard = false;
+        cardInserted = false;
 
         StartCoroutine(MoveCamera(mainCamera.transform.position, originalCamPos, mainCamera.transform.rotation, originalCamRot, 0.4f));
     }
