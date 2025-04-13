@@ -6,9 +6,12 @@ public class Atm : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform atmViewpoint;
     [SerializeField] private Transform cardViewpoint;
+    [SerializeField] private GameObject card;
 
     [Header("Settings")]
     [SerializeField] private float DistanceToInteract = 3f;
+    [Range(1f, 3f)]
+    [SerializeField] private float cardSens = 1.5f; // Sensitivity for card movement
 
     private PlayerController playerController;
     private Camera mainCamera;
@@ -16,6 +19,9 @@ public class Atm : MonoBehaviour
 
     private Vector3 originalCamPos;
     private Quaternion originalCamRot;
+
+    private bool isHoldingCard = false;
+    private bool cardInserted = false;
 
     void Start() {
         mainCamera = Camera.main;
@@ -28,60 +34,69 @@ public class Atm : MonoBehaviour
 
         if (distance < DistanceToInteract) {
             if (!isUsingATM) {
-                if (Input.GetKeyDown(KeyCode.E)) {
+                if (Input.GetKeyDown(KeyCode.E)) { // Start Card Insertion
+                    isUsingATM = true;
                     CardInsertion();
-                    //EnterATMView();
                 }
             }
-            else {
-                if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape)){
+            else { // Is interacting with ATM
+                if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape)) { // Exit ATM
+                    isUsingATM = false;
                     ExitATMView();
+                }
+
+                if (isHoldingCard && !cardInserted) { //Card is beeing grabbed and inserted
+                    HandleCardMovement();
+                }
+
+                if (!cardInserted && card.transform.localPosition.z >= -0.48f) { //Card fully inserted
+                    cardInserted = true;
+                    EnterATMView(); 
                 }
             }
         }
     }
 
     private void CardInsertion() {
-        // Move the camera to the card insertion point
+        originalCamPos = mainCamera.transform.position;
+        originalCamRot = mainCamera.transform.rotation;
         StartCoroutine(MoveCamera(mainCamera.transform.position, cardViewpoint.position, mainCamera.transform.rotation, cardViewpoint.rotation, 0.4f));
-        Debug.Log("Card inserted into ATM."); // d
-        
-        // Wait for a moment before entering ATM view
-        Invoke("EnterATMView", 1f);
-    }
-
-    private void EnterATMView() {
-        isUsingATM = true;
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
         playerController.enabled = false;
 
-        originalCamPos = mainCamera.transform.position;
-        originalCamRot = mainCamera.transform.rotation;
+        isHoldingCard = true;
+    }
 
-        StartCoroutine(MoveCamera(originalCamPos, atmViewpoint.position, originalCamRot, atmViewpoint.rotation, 0.4f));
+    private void HandleCardMovement() {
+        if (Input.GetMouseButton(0)) { // Left mouse button is held down
+            float mouseZ = Input.GetAxis("Mouse Y"); // up/down to push/pull
+            Vector3 localPos = card.transform.localPosition;
 
-        Debug.Log("Entered ATM view.");
+            localPos.z += mouseZ * Time.deltaTime * cardSens; // tweak speed as needed
+            localPos.z = Mathf.Clamp(localPos.z, -0.64f, -0.48f); // clamp range
+
+            card.transform.localPosition = localPos;
+        }
+    }
+
+    private void EnterATMView() {
+        StartCoroutine(MoveCamera(cardViewpoint.position, atmViewpoint.position, cardViewpoint.rotation, atmViewpoint.rotation, 0.4f));
     }
 
     public void ExitATMView() {
-        isUsingATM = false;
-
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
         playerController.enabled = true;
 
         StartCoroutine(MoveCamera(mainCamera.transform.position, originalCamPos, mainCamera.transform.rotation, originalCamRot, 0.4f));
-
-        Debug.Log("Exited ATM.");
     }
 
     private IEnumerator MoveCamera(Vector3 fromPos, Vector3 toPos, Quaternion fromRot, Quaternion toRot, float duration) {
         float elapsedTime = 0f;
 
-        while (elapsedTime < duration)
-        {
+        while (elapsedTime < duration) {
             float t = elapsedTime / duration;
             mainCamera.transform.position = Vector3.Lerp(fromPos, toPos, t);
             mainCamera.transform.rotation = Quaternion.Slerp(fromRot, toRot, t);
@@ -94,4 +109,3 @@ public class Atm : MonoBehaviour
         mainCamera.transform.rotation = toRot;
     }
 }
-// dd
