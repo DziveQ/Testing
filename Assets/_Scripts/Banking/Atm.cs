@@ -29,8 +29,7 @@ public class Atm : MonoBehaviour
         if (distance < DistanceToInteract) {
             if (!isUsingATM) {
                 if (Input.GetKeyDown(KeyCode.E)) {
-                    CardInsertion();
-                    //EnterATMView();
+                    EnterATMView();
                 }
             }
             else {
@@ -39,15 +38,6 @@ public class Atm : MonoBehaviour
                 }
             }
         }
-    }
-
-    private void CardInsertion() {
-        // Move the camera to the card insertion point
-        StartCoroutine(MoveCamera(mainCamera.transform.position, cardViewpoint.position, mainCamera.transform.rotation, cardViewpoint.rotation, 0.4f));
-        Debug.Log("Card inserted into ATM.");
-        
-        // Wait for a moment before entering ATM view
-        Invoke("EnterATMView", 1f);
     }
 
     private void EnterATMView() {
